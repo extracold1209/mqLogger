@@ -1,0 +1,9 @@
+# build, libraries
+dist
+node_modules
+
+# IDE
+.idea
+
+# files
+*.log
