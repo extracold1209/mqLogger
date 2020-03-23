@@ -51,6 +51,10 @@ class MessageQueue {
         return message;
     }
 
+    /**
+     * reset current queue object and load new queue from file
+     * @param newFilePath {string?}
+     */
     async initializeQueue(newFilePath?: string) {
         this.queueObject = [];
 
@@ -59,28 +63,25 @@ class MessageQueue {
             this.queueFilePath = newFilePath;
         }
 
-        const fileBuffer = await fsp.readFile(this.queueFilePath);
-        const messages = fileBuffer.toString('utf8').split(/\r?\n/);
+        if (fs.existsSync(this.queueFilePath)) {
+            const fileBuffer = await fsp.readFile(this.queueFilePath);
+            const messages = fileBuffer.toString('utf8').split(/\r?\n/);
 
-        messages.forEach((msgString) => {
-            if (msgString === '') {
-                return;
-            }
+            messages.forEach((msgString) => {
+                if (msgString === '') {
+                    return;
+                }
 
-            const message = JSON.parse(msgString) as MessageAction;
-            if (message.action === 'add') {
-                this.queueObject.push(message.payload);
-            } else if (message.action === 'delete') {
-                this.queueObject.shift();
-            } else {
-                throw new Error('message from file : parsing error');
-            }
-        })
-
-        // 큐오브젝트를 초기화한다
-        // 파일을 한줄씩 읽는다
-        // add 이벤트면 큐오브젝트에 데이터를 추가
-        // delete 이벤트면 큐오브젝트에서 데이터를 제거
+                const message = JSON.parse(msgString) as MessageAction;
+                if (message.action === 'add') {
+                    this.queueObject.push(message.payload);
+                } else if (message.action === 'delete') {
+                    this.queueObject.shift();
+                } else {
+                    throw new Error('message from file : parsing error');
+                }
+            })
+        }
     }
 
     clear() {

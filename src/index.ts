@@ -1,16 +1,5 @@
-import isNetworkConnected from './isNetworkConnected';
 import unfetch from "isomorphic-unfetch";
-
-/**
- * 무엇을 해야하는가?
- * - 메세지 이벤트를 보낸다
- *   - url 있는 쪽으로 메세지 보냄
- *     - 보내졌는가? -> 큐검사 -> 20개씩 묶어서 보내기
- *     - 보내지지않았는가? -> 큐에다 추가
- *
- *
- *
- */
+import MessageQueue from './messageQueue';
 
 export type StatisticsOptions = {
     url: string; // 보낼 원격 로그저장소의 주소
@@ -20,27 +9,19 @@ export type StatisticsOptions = {
 
 export type QueryParams = { [key: string]: string | number };
 
+const queue = new MessageQueue();
+let _isInitialized = false;
 const _options: StatisticsOptions = {
     url: 'https://playentry.org/logs',
     cacheDir: '.',
     offlineCheckInterval: 1000,
 };
 
-let _isOffline: boolean = false;
-let _checkConnectionInterval: NodeJS.Timeout | undefined = undefined;
-let _checkSendQueueInterval: number | undefined = undefined;
-
-function startNetworkCheckInterval() {
-    _checkConnectionInterval = setInterval(async () => {
-        _isOffline = await isNetworkConnected();
-    }, _options.offlineCheckInterval);
-}
-
-function _checkSendQueue() {
-    _checkSendQueueInterval = setInterval(async () => {
-        await isNetworkConnected();
-        // 메세지 큐를 검사한다
-    });
+async function setFirstInitialize() {
+    if (!_isInitialized) {
+        await queue.initializeQueue();
+        _isInitialized = true;
+    }
 }
 
 /**
@@ -50,8 +31,6 @@ function _checkSendQueue() {
  */
 export function setup(options?: Partial<StatisticsOptions>) {
     options && Object.assign(_options, options);
-    _checkConnectionInterval && clearInterval(_checkConnectionInterval);
-    startNetworkCheckInterval();
 }
 
 export function makeQueryString(params: QueryParams): string {
@@ -63,22 +42,25 @@ export default async function send(args: QueryParams) {
     if (!_options.url) {
         throw new Error('url is undefined');
     }
+    await setFirstInitialize();
     const queryString = makeQueryString(args);
     try {
         const result = await unfetch(_options.url + queryString);
         if (result.status !== 200) {
             console.warn('response received but status is not OK');
-            // 메세지를 큐에 백업한다
+            queue.queue(args);
+        } else if (queue.length) {
+            // 큐에 메세지가 있는지 확인한다
+            // 메세지는 하나씩 보낸다. 나중에 청크단위를 세팅할 수 있게 한다
+
+            const queueMessage = queue.dequeue();
+            // noinspection ES6MissingAwait
+            queueMessage && send(queueMessage);
         }
-        // else {
-        // 큐에 메세지가 있는지 확인한다
-        // 메세지가 있다면 싹다 보낸다
-        // 메세지를 보내다가 에러가 나면 나머지 메세지를 다시 쑤셔넣는다
-        // 메세지는 하나씩 보낸다. 나중에 청크단위를 세팅할 수 있게 한다
-        // }
         return result.clone();
     } catch (e) {
         // 메시지를 큐에 백업한다
+        queue.queue(args);
         throw e;
     }
 }
