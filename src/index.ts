@@ -3,7 +3,7 @@ import MessageQueue from './messageQueue';
 
 export type StatisticsOptions = {
     url: string; // 보낼 원격 로그저장소의 주소
-    cacheDir: string; // 설정되어있으면 오프라인 상태일때 발생한 통계로그를 저장해두고, 온라인일 때 다시 보낸다.
+    cacheDir?: string; // 설정되어있으면 오프라인 상태일때 발생한 통계로그를 저장해두고, 온라인일 때 다시 보낸다.
     offlineCheckInterval: number; // 해당 인터벌 마다 온라인 / 오프라인 여부를 확인한다.
 }
 
@@ -13,13 +13,13 @@ const queue = new MessageQueue();
 let _isInitialized = false;
 const _options: StatisticsOptions = {
     url: 'https://playentry.org/logs',
-    cacheDir: '.',
+    cacheDir: undefined,
     offlineCheckInterval: 1000,
 };
 
 async function setFirstInitialize() {
     if (!_isInitialized) {
-        await queue.initializeQueue();
+        await queue.initializeQueue(_options.cacheDir);
         _isInitialized = true;
     }
 }
