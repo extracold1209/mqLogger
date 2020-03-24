@@ -5,20 +5,20 @@ import fs from 'fs';
 
 chai.use(chaiFs);
 
-describe('MessageQueue', function() {
+describe('MessageQueue', function () {
     let messageQueue: MessageQueue;
 
-    beforeEach(function() {
+    beforeEach(function () {
         messageQueue = new MessageQueue();
     });
 
-    it('normal enqueue', function() {
+    it('normal enqueue', function () {
         messageQueue.queue({event: 'test', payload: 'dummy'});
         assert.equal(messageQueue.length, 1);
         assert.pathExists(messageQueue.path);
     });
 
-    it('dequeue whole message',  function() {
+    it('dequeue whole message', function () {
         const message = {event: 'test', payload: 'hello'};
 
         messageQueue.queue(message);
@@ -28,7 +28,7 @@ describe('MessageQueue', function() {
         assert.pathExists(messageQueue.path);
     });
 
-    it('dequeue message but message remained', function() {
+    it('dequeue message but message remained', function () {
         const message = {event: 'test', payload: 'hello'};
         const message2 = {event: 'test', payload: 'hello2'};
 
@@ -47,13 +47,13 @@ describe('MessageQueue', function() {
         assert.fileContentMatch(messageQueue.path, /(.*[\r\n]){3}/);
     });
 
-    it('dequeue but empty queue', function() {
+    it('dequeue but empty queue', function () {
         const message = messageQueue.dequeue();
 
         assert.isUndefined(message);
     });
 
-    it('load from file', async function() {
+    it('load from file', async function () {
         const newFilePath = './loadFile.txt';
         const message = {event: 'test', payload: 'hello'};
         const message2 = {event: 'test', payload: 'hello2'};
@@ -69,7 +69,7 @@ describe('MessageQueue', function() {
         assert.equal(messageQueue.length, 1);
     });
 
-    afterEach(function() {
+    afterEach(function () {
         messageQueue.clear();
     })
 });

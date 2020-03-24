@@ -1,7 +1,7 @@
 import isNetworkConnected from "./isNetworkConnected";
 
-describe('isNetworkConnected', function() {
-    it('connection test', async function() {
+describe('isNetworkConnected', function () {
+    it('connection test', async function () {
         const result = await isNetworkConnected();
 
         if (result) {

@@ -7,60 +7,85 @@ export type StatisticsOptions = {
     offlineCheckInterval: number; // 해당 인터벌 마다 온라인 / 오프라인 여부를 확인한다.
 }
 
+export type SendOptions = { noDequeueSend?: boolean }
+
 export type QueryParams = { [key: string]: string | number };
 
-const queue = new MessageQueue();
-let _isInitialized = false;
-const _options: StatisticsOptions = {
-    url: 'https://playentry.org/logs',
-    cacheDir: undefined,
-    offlineCheckInterval: 1000,
-};
+class MQLogger {
+    public static instance: MQLogger;
+    private queue: MessageQueue;
+    private isInitialized = false;
+    private options: StatisticsOptions = {
+        url: 'https://playentry.org/logs',
+        cacheDir: undefined,
+        offlineCheckInterval: 1000,
+    };
 
-async function executeFirstInitialize() {
-    if (!_isInitialized) {
-        await queue.initializeQueue(_options.cacheDir);
-        _isInitialized = true;
+    get logPath() {
+        return this.queue.path;
     }
-}
 
-/**
- * 기본 옵션을 변경한다.
- * 기본값이 정해져있으므로 무조건 사용해야 하는 함수는 아니다.
- * @param options
- */
-export function setup(options?: Partial<StatisticsOptions>) {
-    options && Object.assign(_options, options);
-}
+    constructor(options?: Partial<StatisticsOptions>) {
+        Object.assign(this.options, options);
+        this.queue = new MessageQueue(this.options.cacheDir);
 
-export function makeQueryString(params: QueryParams): string {
-    const queries = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&');
-    return `?${queries}`;
-}
-
-export default async function send(args: QueryParams) {
-    if (!_options.url) {
-        throw new Error('url is undefined');
-    }
-    await executeFirstInitialize();
-    const queryString = makeQueryString(args);
-    try {
-        const result = await unfetch(_options.url + queryString);
-        if (result.status !== 200) {
-            console.warn('response received but status is not OK');
-            queue.queue(args);
-        } else if (queue.length) {
-            // 큐에 메세지가 있는지 확인한다
-            // 메세지는 하나씩 보낸다. 나중에 청크단위를 세팅할 수 있게 한다
-
-            const queueMessage = queue.dequeue();
-            // noinspection ES6MissingAwait
-            queueMessage && send(queueMessage);
+        // 최초 선언된 객체가 공용 인스턴스
+        if (!MQLogger.instance) {
+            MQLogger.instance = this;
         }
-        return result.clone();
-    } catch (e) {
-        // 메시지를 큐에 백업한다
-        queue.queue(args);
-        throw e;
+    }
+
+    /**
+     * 공용 인스턴스를 부른다. 그렇다고 이 클래스가 무조건 공용 인스턴스를 사용해야 하는 것은 아니다
+     */
+    public getInstance() {
+        // 최초 인스턴스 선언도 없는 경우 기본인스턴스를 생성
+        if (!MQLogger.instance) {
+            MQLogger.instance = new MQLogger();
+        }
+
+        return MQLogger.instance;
+    }
+
+    public makeQueryString(params: QueryParams): string {
+        const queries = Object.entries(params).map(([key, value]) => `${key}=${value}`).join('&');
+        return `?${queries}`;
+    }
+
+    public async send(args: QueryParams, options?: SendOptions) {
+        if (!this.options.url) {
+            throw new Error('url is undefined');
+        }
+
+        await this.executeFirstInitialize();
+        const queryString = this.makeQueryString(args);
+        try {
+            const result = await unfetch(this.options.url + queryString);
+            if (result.status !== 200) {
+                console.warn('response received but status is not OK');
+                this.queue.queue(args);
+            } else if (this.queue.length && !options?.noDequeueSend) {
+                // 큐에 메세지가 있는지 확인한다
+                // 메세지는 하나씩 보낸다. 나중에 청크단위를 세팅할 수 있게 한다
+
+                const queueMessage = this.queue.dequeue();
+                // noinspection ES6MissingAwait
+                queueMessage && this.send(queueMessage);
+            }
+            return result.clone();
+        } catch (e) {
+            // 메시지를 큐에 백업한다
+            this.queue.queue(args);
+            throw e;
+        }
+    }
+
+    private async executeFirstInitialize() {
+        if (!this.isInitialized) {
+            await this.queue.initializeQueue(this.options.cacheDir);
+            this.isInitialized = true;
+        }
     }
 }
+
+export default MQLogger;

@@ -1,12 +1,15 @@
-import send from './index';
+import MQLogger from './index';
 import checkNetworkConnected from "./isNetworkConnected";
 import nock from 'nock';
-import {assert} from 'chai'
+import chai, {assert} from 'chai'
 import chaiFs from 'chai-fs';
+import fs from 'fs';
 
 chai.use(chaiFs);
 
 describe('Index', async () => {
+    const logger = new MQLogger();
+
     it('send:networkConnected', async function () {
         const isNetworkConnected = await checkNetworkConnected();
         if (!isNetworkConnected) {
@@ -16,16 +19,20 @@ describe('Index', async () => {
         const dummyQuery = {event: 'test', hello: 'word'};
         const dummyResponse = '[Nock] Test';
 
-        nock('https://playentry.org')
-            .get('/logs')
-            .query(dummyQuery)
-            .reply(200, dummyResponse);
+        try {
+            nock('https://playentry.org')
+                .get('/logs')
+                .query(dummyQuery)
+                .reply(200, dummyResponse);
 
-        const result = await send(dummyQuery);
-        const responseBody = await result.text();
+            const result = await logger.send(dummyQuery, {noDequeueSend: true});
+            const responseBody = await result.text();
 
-        assert.equal(result.status, 200);
-        assert.equal(responseBody, dummyResponse);
+            assert.equal(result.status, 200);
+            assert.equal(responseBody, dummyResponse);
+        } catch (e) {
+            assert.fail();
+        }
     });
 
     it('send:networkNotConnected', async function () {
@@ -41,14 +48,18 @@ describe('Index', async () => {
             .replyWithError('Network not connected');
 
         try {
-            await send(dummyQuery);
+            await logger.send(dummyQuery, {noDequeueSend: true});
         } catch (e) {
             assert.ok(e);
+            assert.file(logger.logPath);
         }
     });
 
 
     afterEach(function () {
         nock.cleanAll();
+        if (fs.existsSync(logger.logPath)) {
+            fs.unlinkSync(logger.logPath);
+        }
     });
 });
