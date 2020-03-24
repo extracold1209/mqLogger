@@ -1,9 +1,18 @@
 import send from './index';
+import checkNetworkConnected from "./isNetworkConnected";
 import nock from 'nock';
 import {assert} from 'chai'
+import chaiFs from 'chai-fs';
 
-describe('Test', () => {
-    it('send', async function () {
+chai.use(chaiFs);
+
+describe('Index', async () => {
+    it('send:networkConnected', async function () {
+        const isNetworkConnected = await checkNetworkConnected();
+        if (!isNetworkConnected) {
+            this.skip();
+        }
+
         const dummyQuery = {event: 'test', hello: 'word'};
         const dummyResponse = '[Nock] Test';
 
@@ -19,7 +28,27 @@ describe('Test', () => {
         assert.equal(responseBody, dummyResponse);
     });
 
+    it('send:networkNotConnected', async function () {
+        const isNetworkConnected = await checkNetworkConnected();
+        if (isNetworkConnected) {
+            this.skip();
+        }
+
+        const dummyQuery = {event: 'test', hello: 'word'};
+
+        nock('https://playentry.org')
+            .get('/logs')
+            .replyWithError('Network not connected');
+
+        try {
+            await send(dummyQuery);
+        } catch (e) {
+            assert.ok(e);
+        }
+    });
+
+
     afterEach(function () {
         nock.cleanAll();
-    })
+    });
 });

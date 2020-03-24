@@ -17,7 +17,7 @@ const _options: StatisticsOptions = {
     offlineCheckInterval: 1000,
 };
 
-async function setFirstInitialize() {
+async function executeFirstInitialize() {
     if (!_isInitialized) {
         await queue.initializeQueue(_options.cacheDir);
         _isInitialized = true;
@@ -42,7 +42,7 @@ export default async function send(args: QueryParams) {
     if (!_options.url) {
         throw new Error('url is undefined');
     }
-    await setFirstInitialize();
+    await executeFirstInitialize();
     const queryString = makeQueryString(args);
     try {
         const result = await unfetch(_options.url + queryString);
