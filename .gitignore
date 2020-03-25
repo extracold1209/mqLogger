@@ -1,5 +1,6 @@
 # build, libraries
 dist
+lib
 node_modules
 
 # IDE

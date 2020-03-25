@@ -1,4 +1,5 @@
 const path = require('path');
+const { CleanWebpackPlugin} = require('clean-webpack-plugin');
 const webpackNodeExternals = require('webpack-node-externals');
 
 module.exports = {
@@ -8,8 +9,8 @@ module.exports = {
         library: 'mq-logger',
         libraryTarget: 'commonjs2',
         libraryExport: 'default',
-        path: path.join(__dirname, 'dist'),
-        filename: 'index.bundle.js',
+        path: path.join(__dirname, 'lib'),
+        filename: 'index.js',
     },
     resolve: {
         extensions: ['.js', '.ts', '.ts']
@@ -28,5 +29,6 @@ module.exports = {
             },
         ],
     },
-    externals: [webpackNodeExternals()]
+    externals: [webpackNodeExternals()],
+    plugins: [new CleanWebpackPlugin(),]
 };

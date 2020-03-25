@@ -12,7 +12,7 @@ export type SendOptions = { noDequeueSend?: boolean }
 export type QueryParams = { [key: string]: string | number };
 
 class MQLogger {
-    public static instance: MQLogger;
+    private static instance: MQLogger;
     private queue: MessageQueue;
     private isInitialized = false;
     private options: StatisticsOptions = {
@@ -38,13 +38,18 @@ class MQLogger {
     /**
      * 공용 인스턴스를 부른다. 그렇다고 이 클래스가 무조건 공용 인스턴스를 사용해야 하는 것은 아니다
      */
-    public getInstance() {
+    public static getGlobalInstance() {
         // 최초 인스턴스 선언도 없는 경우 기본인스턴스를 생성
-        if (!MQLogger.instance) {
-            MQLogger.instance = new MQLogger();
+        if (!this.instance) {
+            console.warn('global instance not set. make new instance automatically');
+            this.instance = new MQLogger();
         }
 
-        return MQLogger.instance;
+        return this.instance;
+    }
+
+    public static setGlobalInstance(instance: MQLogger) {
+        this.instance = instance;
     }
 
     public makeQueryString(params: QueryParams): string {
