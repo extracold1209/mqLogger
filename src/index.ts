@@ -57,7 +57,7 @@ class MQLogger {
         return `?${queries}`;
     }
 
-    public async send(args: QueryParams, options?: SendOptions) {
+    public async send(args: QueryParams, options?: SendOptions): Promise<void> {
         if (!this.options.url) {
             throw new Error('url is undefined');
         }
@@ -77,11 +77,10 @@ class MQLogger {
                 // noinspection ES6MissingAwait
                 queueMessage && this.send(queueMessage);
             }
-            return result.clone();
         } catch (e) {
             // 메시지를 큐에 백업한다
             this.queue.enqueue(args);
-            throw e;
+            console.warn('send message failed. message is enqueued', e);
         }
     }
 

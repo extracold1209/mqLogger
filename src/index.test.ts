@@ -25,11 +25,8 @@ describe('Index', async () => {
                 .query(dummyQuery)
                 .reply(200, dummyResponse);
 
-            const result = await logger.send(dummyQuery, {noDequeueSend: true});
-            const responseBody = await result.text();
-
-            assert.equal(result.status, 200);
-            assert.equal(responseBody, dummyResponse);
+            await logger.send(dummyQuery, {noDequeueSend: true});
+            assert.notPathExists(logger.logPath);
         } catch (e) {
             assert.fail();
         }
@@ -49,9 +46,9 @@ describe('Index', async () => {
 
         try {
             await logger.send(dummyQuery, {noDequeueSend: true});
+            assert.pathExists(logger.logPath);
         } catch (e) {
-            assert.ok(e);
-            assert.file(logger.logPath);
+            assert.fail();
         }
     });
 
