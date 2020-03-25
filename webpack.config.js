@@ -6,7 +6,7 @@ module.exports = {
     mode: process.env.NODE_ENV || 'development',
     entry: path.join(__dirname, 'src', 'index.ts'),
     output: {
-        library: 'mq-logger',
+        library: 'gw-logger',
         libraryTarget: 'commonjs2',
         libraryExport: 'default',
         path: path.join(__dirname, 'lib'),
