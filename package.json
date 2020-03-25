@@ -1,5 +1,5 @@
 {
-    "name": "gw-logger",
+    "name": "mq-logger",
     "version": "1.0.0",
     "main": "lib",
     "types": "./lib/index.d.ts",
@@ -16,7 +16,8 @@
     },
     "scripts": {
         "test": "mocha -r ts-node/register **/**.test.ts --no-warnings",
-        "build": "webpack"
+        "build": "webpack",
+        "prepublishOnly": "npm run build"
     },
     "devDependencies": {
         "@types/chai": "^4.2.11",

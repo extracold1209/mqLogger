@@ -2,5 +2,7 @@ src
 webpack.*.js
 *.log
 *.lock
+tsconfig.json
 package-lock.json
 .eslintrc.json
+.idea
