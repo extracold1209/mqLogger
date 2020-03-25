@@ -37,7 +37,7 @@ class MessageQueue {
         return this.queueFilePath;
     }
 
-    queue(message: Message): void {
+    enqueue(message: Message): void {
         this.queueObject.push(message);
         this.appendMessageToFile('add', message);
     }
@@ -46,6 +46,10 @@ class MessageQueue {
         const message = this.queueObject.shift();
         if (message) {
             this.appendMessageToFile('delete', message);
+        }
+
+        if (!message || !this.queueObject.length){
+            this.deleteQueueFile();
         }
 
         return message;

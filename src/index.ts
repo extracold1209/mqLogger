@@ -68,7 +68,7 @@ class MQLogger {
             const result = await unfetch(this.options.url + queryString);
             if (result.status !== 200) {
                 console.warn('response received but status is not OK');
-                this.queue.queue(args);
+                this.queue.enqueue(args);
             } else if (this.queue.length && !options?.noDequeueSend) {
                 // 큐에 메세지가 있는지 확인한다
                 // 메세지는 하나씩 보낸다. 나중에 청크단위를 세팅할 수 있게 한다
@@ -80,7 +80,7 @@ class MQLogger {
             return result.clone();
         } catch (e) {
             // 메시지를 큐에 백업한다
-            this.queue.queue(args);
+            this.queue.enqueue(args);
             throw e;
         }
     }

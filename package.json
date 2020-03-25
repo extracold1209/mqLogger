@@ -1,9 +1,19 @@
 {
-    "name": "mq-logger",
+    "name": "gw-logger",
     "version": "1.0.0",
     "main": "lib",
     "types": "./lib/index.d.ts",
     "license": "MIT",
+    "author": "extracold1209 <extracold1209@gmail.com>",
+    "description": "remote http query sender with message queue structure",
+    "bugs": {
+        "url": "https://github.com/extracold1209/mqLogger/issues",
+        "email": "extracold1209@gmail.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/extracold1209/mqLogger.git"
+    },
     "scripts": {
         "test": "mocha -r ts-node/register **/**.test.ts --no-warnings",
         "build": "webpack"

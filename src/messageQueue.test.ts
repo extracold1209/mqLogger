@@ -13,7 +13,7 @@ describe('MessageQueue', function () {
     });
 
     it('normal enqueue', function () {
-        messageQueue.queue({event: 'test', payload: 'dummy'});
+        messageQueue.enqueue({event: 'test', payload: 'dummy'});
         assert.equal(messageQueue.length, 1);
         assert.pathExists(messageQueue.path);
     });
@@ -21,19 +21,19 @@ describe('MessageQueue', function () {
     it('dequeue whole message', function () {
         const message = {event: 'test', payload: 'hello'};
 
-        messageQueue.queue(message);
+        messageQueue.enqueue(message);
         const dequeueMessage = messageQueue.dequeue();
 
         assert.deepEqual(message, dequeueMessage);
-        assert.pathExists(messageQueue.path);
+        assert.notPathExists(messageQueue.path);
     });
 
     it('dequeue message but message remained', function () {
         const message = {event: 'test', payload: 'hello'};
         const message2 = {event: 'test', payload: 'hello2'};
 
-        messageQueue.queue(message);
-        messageQueue.queue(message2);
+        messageQueue.enqueue(message);
+        messageQueue.enqueue(message2);
 
         const dequeueMessage = messageQueue.dequeue();
 
@@ -51,14 +51,24 @@ describe('MessageQueue', function () {
         const message = messageQueue.dequeue();
 
         assert.isUndefined(message);
+        assert.notPathExists(messageQueue.path);
+    });
+
+    it('dequeue after enqueue file delete test', function () {
+        const message = {event: 'test', payload: 'hello'};
+        messageQueue.enqueue(message);
+        const dequeueMessage = messageQueue.dequeue();
+
+        assert.deepEqual(message, dequeueMessage);
+        assert.notPathExists(messageQueue.path);
     });
 
     it('load from file', async function () {
         const newFilePath = './loadFile.txt';
         const message = {event: 'test', payload: 'hello'};
         const message2 = {event: 'test', payload: 'hello2'};
-        messageQueue.queue(message);
-        messageQueue.queue(message2);
+        messageQueue.enqueue(message);
+        messageQueue.enqueue(message2);
         messageQueue.dequeue();
 
         fs.renameSync(messageQueue.path, newFilePath);
