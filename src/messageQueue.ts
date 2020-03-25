@@ -62,7 +62,8 @@ class MessageQueue {
     async initializeQueue(newFilePath?: string) {
         this.queueObject = [];
 
-        if (newFilePath) {
+        // if queue data filePath is changed, delete previous log file
+        if (newFilePath && newFilePath !== this.queueFilePath) {
             this.deleteQueueFile();
             this.queueFilePath = newFilePath;
         }

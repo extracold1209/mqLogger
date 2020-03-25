@@ -4,7 +4,7 @@ import MessageQueue from './messageQueue';
 export type StatisticsOptions = {
     url: string; // 보낼 원격 로그저장소의 주소
     cacheDir?: string; // 설정되어있으면 오프라인 상태일때 발생한 통계로그를 저장해두고, 온라인일 때 다시 보낸다.
-    offlineCheckInterval: number; // 해당 인터벌 마다 온라인 / 오프라인 여부를 확인한다.
+    offlineCheckInterval?: number; // 해당 인터벌 마다 온라인 / 오프라인 여부를 확인한다.
 }
 
 export type SendOptions = { noDequeueSend?: boolean }
@@ -69,7 +69,7 @@ class MQLogger {
             if (result.status !== 200) {
                 console.warn('response received but status is not OK');
                 this.queue.enqueue(args);
-            } else if (this.queue.length && !options?.noDequeueSend) {
+            } else if (!options?.noDequeueSend) {
                 // 큐에 메세지가 있는지 확인한다
                 // 메세지는 하나씩 보낸다. 나중에 청크단위를 세팅할 수 있게 한다
 
