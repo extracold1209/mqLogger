@@ -21,10 +21,6 @@ class MQLogger {
         offlineCheckInterval: 1000,
     };
 
-    get logPath() {
-        return this.queue.path;
-    }
-
     constructor(options?: Partial<StatisticsOptions>) {
         Object.assign(this.options, options);
         this.queue = new MessageQueue(this.options.cacheDir);
@@ -33,6 +29,10 @@ class MQLogger {
         if (!MQLogger.instance) {
             MQLogger.instance = this;
         }
+    }
+
+    get logPath() {
+        return this.queue.path;
     }
 
     /**

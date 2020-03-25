@@ -25,16 +25,16 @@ class MessageQueue {
     private queueFilePath: string;
     private queueObject: Message[] = [];
 
+    constructor(queueFilePath: string = './queue.txt') {
+        this.queueFilePath = queueFilePath;
+    }
+
     get length() {
         return this.queueObject.length;
     }
 
     get path() {
         return this.queueFilePath;
-    }
-
-    constructor(queueFilePath: string = './queue.txt') {
-        this.queueFilePath = queueFilePath;
     }
 
     queue(message: Message): void {
