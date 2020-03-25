@@ -22,6 +22,7 @@
     "devDependencies": {
         "@types/chai": "^4.2.11",
         "@types/chai-fs": "^2.0.2",
+        "@types/mkdirp": "^1.0.0",
         "@types/mocha": "^7.0.2",
         "@types/nock": "^11.1.0",
         "@types/node": "^13.9.2",
@@ -43,6 +44,7 @@
         "webpack-node-externals": "^1.7.2"
     },
     "dependencies": {
-        "isomorphic-unfetch": "^3.0.0"
+        "isomorphic-unfetch": "^3.0.0",
+        "mkdirp": "^1.0.3"
     }
 }

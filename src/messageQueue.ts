@@ -1,4 +1,6 @@
 import fs from 'fs';
+import path from 'path';
+import mkdirp from 'mkdirp';
 
 const fsp = fs.promises;
 
@@ -48,7 +50,7 @@ class MessageQueue {
             this.appendMessageToFile('delete', message);
         }
 
-        if (!message || !this.queueObject.length){
+        if (!message || !this.queueObject.length) {
             this.deleteQueueFile();
         }
 
@@ -95,6 +97,7 @@ class MessageQueue {
     }
 
     private appendMessageToFile(action: 'add' | 'delete', payload: Message) {
+        mkdirp.sync(path.dirname(this.queueFilePath));
         fs.appendFileSync(this.queueFilePath, `${JSON.stringify({action, payload})}\r\n`);
     }
 
